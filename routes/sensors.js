@@ -9,8 +9,34 @@ logger.level = Environment.logLevel; // 'debug';
 
 
 router.get('/all', function (req, res) {
-    logger.info('req', req);
-    Sensor.listAll((err, sensors) => {
+    logger.info('all req', req.params);
+    logger.info('allreq', req);
+    Sensor.getLatestReading((err, sensors) => {
+        if (err) {
+            return res.status(500).json({ status: 500, success: false, msg: err });
+        } else {
+            res.json(sensors);
+        }
+    });
+});
+
+
+router.get('/historical', function (req, res) {
+    logger.info('historical...param', req.params);
+    logger.info('historical...body', req.body);
+    logger.info('historical...body', req);
+    Sensor.getChartDataByRange(req.params.dtgrp,(err, sensors) => {
+        if (err) {
+            return res.status(500).json({ status: 500, success: false, msg: err });
+        } else {
+            res.json(sensors);
+        }
+    });
+});
+
+router.get('/historical/:dtgrp', function (req, res) {
+    logger.info('historical/:dtgrp', req.params);
+    Sensor.getChartDataByRange(req.params.dtgrp,(err, sensors) => {
         if (err) {
             return res.status(500).json({ status: 500, success: false, msg: err });
         } else {
