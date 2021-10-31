@@ -9,7 +9,7 @@ logger.level = Environment.logLevel; // 'debug';
 
 module.exports.getLatestReading = (callback) => {
     let sqlQuery = `SELECT * from  env_data`;
-    sqlQuery += ` order by created desc limit 1;`;
+    sqlQuery += ` order by timestamp desc limit 1;`;
 
     console.log('sqlQuery', sqlQuery);
 
@@ -39,7 +39,7 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
     } else if (dtgrp === 'thisyear') {
 
     }
-    sqlQuery += ` order by created;`;
+    sqlQuery += ` order by timestamp;`;
 
     console.log('sqlQuery', sqlQuery);
 
@@ -109,7 +109,7 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
 
 module.exports.listAllV2 = (callback) => {
     let sqlQuery = `SELECT * from  env_data`;
-    sqlQuery += ` order by created desc limit 1;`;
+    sqlQuery += ` order by timestamp desc limit 1;`;
 
     console.log('sqlQuery', sqlQuery);
 
@@ -222,9 +222,9 @@ function setDataAndDateSet(data, dataSet, dateSet) {
             let oCtr = 0;
             for (const [key, value] of Object.entries(data)) {
                 // logger.debug(key + ' = ' + value);
-                if (key !== 'id' && key !== 'Created') {
+                if (key !== 'id' && key !== 'TimeStamp') {
                     dataSet[key].push(value);
-                    dateSet[key].push(data.Created.getTime());
+                    dateSet[key].push(data.TimeStamp.getTime());
                 }
                 oCtr++
                 if (oCtr >= Object.entries(dataSet).length) {
