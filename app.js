@@ -1,3 +1,4 @@
+
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -6,6 +7,8 @@ const mysql = require('mysql2');
 const compression = require('compression')
 const Environment = require('./config/environment');
 const sensors = require('./routes/sensors');
+
+const dbConfig = Environment.db;
 
 const log4js = require('log4js');
 log4js.configure({
@@ -26,15 +29,9 @@ const logger = log4js.getLogger(appName);
 // Port Number
 const port = 3001;
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'keldb'
-});
+const connection = mysql.createConnection(dbConfig);
 
 const app = express();
-
 
 // compress all responses
 app.use(compression())

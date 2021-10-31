@@ -1,10 +1,9 @@
 const mysql = require('mysql2');
-var conn = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'keldb'
-}); 
+const Environment = require('./config/environment');
+const dbConfig = Environment.db;
+
+var conn = mysql.createConnection(dbConfig); 
+
 
 conn.connect((err) => {
   if (err) {
