@@ -9,15 +9,15 @@ module.exports.db_rv =  {
 }
 
 module.exports.db_kel =  {
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'keldb'
+    host: '127.0.0.1',
+    user: 'clarenz',
+    password: 'MN:$r50a6-p',
+    database: 'garden'
 }
 
 module.exports.db =  {
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'keldb'
+    host: '127.0.0.1',
+    user: 'clarenz',
+    password: 'MN:$r50a6-p',
+    database: 'garden'
 }
