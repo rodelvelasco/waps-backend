@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Environment = require('../config/environment');
-
 const Sensor = require('../models/sensor');
 
 const logger = require('log4js').getLogger('sensors');
@@ -20,11 +19,8 @@ router.get('/all', function (req, res) {
     });
 });
 
-
-router.get('/historical', function (req, res) {
-    logger.info('historical...param', req.params);
-    logger.info('historical...body', req.body);
-    logger.info('historical...body', req);
+router.get('/historical/:dtgrp', function (req, res) {
+    logger.info('historical/:dtgrp', req.params);
     Sensor.getChartDataByRange(req.params.dtgrp,(err, sensors) => {
         if (err) {
             return res.status(500).json({ status: 500, success: false, msg: err });
@@ -34,8 +30,11 @@ router.get('/historical', function (req, res) {
     });
 });
 
-router.get('/historical/:dtgrp', function (req, res) {
-    logger.info('historical/:dtgrp', req.params);
+
+router.get('/historical', function (req, res) {
+    logger.info('historical...param', req.params);
+    logger.info('historical...body', req.body);
+    logger.info('historical...body', req);
     Sensor.getChartDataByRange(req.params.dtgrp,(err, sensors) => {
         if (err) {
             return res.status(500).json({ status: 500, success: false, msg: err });

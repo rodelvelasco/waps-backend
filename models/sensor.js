@@ -78,15 +78,19 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
             if (result && result.length) {
                 let ctr = 0;
                 for (const d of result) {
-                    logger.debug(d);
-                    const rslt = await setChartDataSet(d, dataSet, dateSet);
+                    // logger.debug(d);
+                    const rslt = await setDataAndDateSet(d, dataSet, dateSet);
                     dataSet = rslt.dataSet;
                     dateSet = rslt.dateSet;
                     ctr++;
                     if (ctr >= result.length) {
-                        logger.info('dataSet', dataSet);
-                        logger.info('dateSet', dateSet);
-                        callback(null,dataSet);
+                        logger.debug('dataSet', dataSet);
+                        logger.debug('dateSet', dateSet);
+                        logger.warn('Calling chartSetData...');
+                        // const chartSetData = [];
+                        const chartSetData = await setChartDataSet(dataSet, dateSet);
+                        logger.warn('chartSetData', chartSetData);
+                        callback(null,chartSetData);
                     }
                 }
             } else {
@@ -137,7 +141,38 @@ module.exports.getSensorByName = (firstname, callback) => {
       });
 };
 
-function setChartDataSet(data, dataSet, dateSet) {
+function setChartDataSet(dataSet, dateSet) {
+    return new Promise(resolve => {
+        let chartDataSet = [];
+        try {
+            let ctr = 0;
+            for (const [key, value] of Object.entries(dataSet)) {
+                let newObj = {
+                    name: key,
+                    series: value,
+                    seriesName: '',
+                    categories: []
+                };
+                // logger.info('key', key);
+                // logger.info('newObj', newObj);
+                // logger.info('dateSet[key]', dateSet[key]);
+                newObj.categories = dateSet[key];
+                chartDataSet.push(newObj);
+                ctr++;
+                logger.info,('ctr', ctr);
+                if (ctr >= Object.entries(dataSet).length) {
+                    resolve(chartDataSet);
+                }
+            }
+            // resove(chartDataSet);
+        } catch (error) {
+            logger.error('ERROR on setChartDataSet', error);
+            resolve(chartDataSet);
+        }
+    })
+}
+
+function setDataAndDateSet(data, dataSet, dateSet) {
     return new Promise(resolve => {
         try {
             // set.Nitrogen.push(data.Nitrogen);
@@ -154,10 +189,10 @@ function setChartDataSet(data, dataSet, dateSet) {
             logger.warn(Object.entries(data).size);
             let oCtr = 0;
             for (const [key, value] of Object.entries(data)) {
-                logger.debug(key + ' = ' + value);
+                // logger.debug(key + ' = ' + value);
                 if (key !== 'id' && key !== 'Created') {
                     dataSet[key].push(value);
-                    dateSet[key].push(formatDate(data.Created));
+                    dateSet[key].push(data.Created.getTime());
                 }
                 oCtr++
                 if (oCtr >= Object.entries(dataSet).length) {
@@ -165,7 +200,7 @@ function setChartDataSet(data, dataSet, dateSet) {
                 }
             }
         } catch (error) {
-            logger.error('ERROR on setChartDataSet', error);
+            logger.error('ERROR on setDataAndDateSet', error);
             resolve({dataSet: dataSet, dateSet: dateSet});
         }
     })
