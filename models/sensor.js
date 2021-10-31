@@ -1,13 +1,14 @@
 const mysql = require('mysql2');
 const Environment = require('../config/environment');
 const db = require('../database');
+const Common = require('./common');
 
 const logger = require('log4js').getLogger('sensor');
 logger.level = Environment.logLevel; // 'debug';
 
 
 module.exports.getLatestReading = (callback) => {
-    let sqlQuery = `SELECT * from  waps_data`;
+    let sqlQuery = `SELECT * from  env_data`;
     sqlQuery += ` order by created desc limit 1;`;
 
     console.log('sqlQuery', sqlQuery);
@@ -26,7 +27,7 @@ module.exports.getLatestReading = (callback) => {
 
 module.exports.getChartDataByRange = async (dtgrp, callback) => {
     logger.info('getChartDataByRange', dtgrp);
-    let sqlQuery = `SELECT * from  waps_data`;
+    let sqlQuery = `SELECT * from  env_data`;
     if (dtgrp === 'thisweek') {
         // sqlQuery += ` order by created;`;
     } else if (dtgrp === 'lastweek') {
@@ -76,23 +77,29 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
             logger.info('getChartDataByRange result', result.length);
             
             if (result && result.length) {
-                let ctr = 0;
-                for (const d of result) {
-                    // logger.debug(d);
-                    const rslt = await setDataAndDateSet(d, dataSet, dateSet);
-                    dataSet = rslt.dataSet;
-                    dateSet = rslt.dateSet;
-                    ctr++;
-                    if (ctr >= result.length) {
-                        logger.debug('dataSet', dataSet);
-                        logger.debug('dateSet', dateSet);
-                        logger.warn('Calling chartSetData...');
-                        // const chartSetData = [];
-                        const chartSetData = await setChartDataSet(dataSet, dateSet);
-                        logger.warn('chartSetData', chartSetData);
-                        callback(null,chartSetData);
+                const formatData = true;
+                if (formatData) {
+                    let ctr = 0;
+                    for (const d of result) {
+                        // logger.debug(d);
+                        const rslt = await setDataAndDateSet(d, dataSet, dateSet);
+                        dataSet = rslt.dataSet;
+                        dateSet = rslt.dateSet;
+                        ctr++;
+                        if (ctr >= result.length) {
+                            logger.debug('dataSet', dataSet);
+                            logger.debug('dateSet', dateSet);
+                            logger.warn('Calling chartSetData...');
+                            // const chartSetData = [];
+                            const chartSetData = await setChartDataSet(dataSet, dateSet);
+                            logger.warn('chartSetData', chartSetData);
+                            callback(null,chartSetData);
+                        }
                     }
+                } else {
+                    callback(null,result);
                 }
+                
             } else {
                 callback(null,null);
             }
@@ -101,7 +108,7 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
 };
 
 module.exports.listAllV2 = (callback) => {
-    let sqlQuery = `SELECT * from  waps_data`;
+    let sqlQuery = `SELECT * from  env_data`;
     sqlQuery += ` order by created desc limit 1;`;
 
     console.log('sqlQuery', sqlQuery);
@@ -141,6 +148,18 @@ module.exports.getSensorByName = (firstname, callback) => {
       });
 };
 
+
+// name: 'Temperature',
+// series: [30, 40, 45, 50, 49, 60, 70, 91],
+// seriesName: '',
+// categories: [1633833600001, 1633833600000, 1633833660000, 1633833720000, 1633833780000, 1633833780000,1633833840000, 1633834200000],
+// maxVal: 600,
+// label: ['Temperature'],
+// unit:'Farenheiht',
+// avg: 33,
+// max: 91,
+// min: 30,
+// color: '#FF0000'
 function setChartDataSet(dataSet, dateSet) {
     return new Promise(resolve => {
         let chartDataSet = [];
@@ -151,12 +170,25 @@ function setChartDataSet(dataSet, dateSet) {
                     name: key,
                     series: value,
                     seriesName: '',
-                    categories: []
+                    categories: [],
+                    label: key
                 };
+                const sum = value.reduce((a, b) => a + b, 0);
+                const avg = (sum / value.length) || 0;
+                // value.max = function() { return  Math.max.apply(Math, this); }; //attach max funct
+                // value.min = function() { return  Math.min.apply(Math, this); }; //attach min funct
+                newObj.min = Math.min.apply(null, value);   // 1
+                newObj.max = Math.max.apply(null, value);
+                newObj.sum = sum;
+                newObj.avg = avg;
                 // logger.info('key', key);
                 // logger.info('newObj', newObj);
                 // logger.info('dateSet[key]', dateSet[key]);
                 newObj.categories = dateSet[key];
+                const chartDef = Common.getCharDefinition(key);
+                newObj.color = chartDef.color;
+                newObj.maxVal = chartDef.max;
+                newObj.unit = chartDef.unit;
                 chartDataSet.push(newObj);
                 ctr++;
                 logger.info,('ctr', ctr);
