@@ -1,6 +1,9 @@
 
-const logger = require('log4js').getLogger('EdiCodes');
+const logger = require('log4js').getLogger('Common');
 logger.level = 'info'; // Environment.logLevel; // 'debug';
+
+module.exports.HOUR_IN_MILLISECONDS = 3600000; // 60 * 60 * 1000
+module.exports.DAY_IN_MILLISECONDS= 86400000; // 24 * 60 * 60 * 1000
 
 module.exports.COLOR_HEX = {
     "aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
@@ -43,10 +46,18 @@ module.exports.ST_CHARTS_DEFINITION = new Map([
 ])
 
 module.exports.getCharDefinition = function (key) {
-    logger.info('getCharDefinition', key);
+    // logger.info('getCharDefinition', key);
     if (this.ST_CHARTS_DEFINITION.get(key)) {
         return this.ST_CHARTS_DEFINITION.get(key);
     } else {
         return { color: this.COLOR_HEX['white'], max: 100, unit: ''}
     }
+}
+
+module.exports.addHours = function (theDate, hours) {
+    return new Date(new Date(theDate).getTime() + (hours * 3600000));
+}
+
+module.exports.addDays = function (theDate, days) {
+    return new Date(theDate.getTime() + (days * this.DAY_IN_MILLISECONDS));
 }
