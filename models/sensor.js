@@ -9,7 +9,7 @@ logger.level = 'error'; // Environment.logLevel; // 'debug';
 
 const chartSetDataEmpty = [
     {
-      name: 'Nitrogen',
+      name: 'Nitrogen (No Data)',
       series: [
       ],
       seriesName: '',
@@ -24,7 +24,7 @@ const chartSetDataEmpty = [
       unit: 'mg/dL'
     },
     {
-      name: 'Phosphorous',
+      name: 'Phosphorous (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -38,7 +38,7 @@ const chartSetDataEmpty = [
       unit: 'mg/dL'
     },
     {
-      name: 'Potassium',
+      name: 'Potassium (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -52,7 +52,7 @@ const chartSetDataEmpty = [
       unit: 'ppm'
     },
     {
-      name: 'Light',
+      name: 'Light (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -66,7 +66,7 @@ const chartSetDataEmpty = [
       unit: 'lux'
     },
     {
-      name: 'SoilMoisture',
+      name: 'SoilMoisture (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -80,7 +80,7 @@ const chartSetDataEmpty = [
       unit: 'percent'
     },
     {
-      name: 'Temperature',
+      name: 'Temperature (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -94,7 +94,7 @@ const chartSetDataEmpty = [
       unit: 'Farenheiht'
     },
     {
-      name: 'Pressure',
+      name: 'Pressure (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -108,7 +108,7 @@ const chartSetDataEmpty = [
       unit: 'psi'
     },
     {
-      name: 'Altitude',
+      name: 'Altitude (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -122,7 +122,7 @@ const chartSetDataEmpty = [
       unit: 'mbar'
     },
     {
-      name: 'Humidity',
+      name: 'Humidity (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -136,7 +136,7 @@ const chartSetDataEmpty = [
       unit: ''
     },
     {
-      name: 'WaterFlow',
+      name: 'WaterFlow (No Data)',
       series: [],
       seriesName: '',
       categories: [],
@@ -375,7 +375,8 @@ function setChartDataSet(dataSet, dateSet) {
                     label: key
                 };
                 const sum = value.reduce((a, b) => a + b, 0);
-                const avg = (sum / value.length) || 0;
+                avg = (sum / value.length) || 0;
+                avg = Math.round(avg * 100) / 100
                 // value.max = function() { return  Math.max.apply(Math, this); }; //attach max funct
                 // value.min = function() { return  Math.min.apply(Math, this); }; //attach min funct
                 newObj.min = Math.min.apply(null, value);   // 1
