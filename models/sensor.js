@@ -178,10 +178,17 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
 
     logger.info('getChartDataByRange', dtgrp);
     let sqlQuery = `SELECT * from  env_data`;
-    if (dtgrp === 'thiswk') {
+    if (dtgrp === 'today') {
+        // sqlQuery += ` order by created;`;
+        dtStart.setHours(0);
+        dtStart.setMinutes(0);
+        dtEnd.setHours(23);
+        dtEnd.setMinutes(59);
+        logger.info('THIS WEEK', dtStart, dtEnd)
+    } else if (dtgrp === 'thiswk') {
         // sqlQuery += ` order by created;`;
         let firstDayOfWeek = dtStart.getDate() - dtStart.getDay();
-        dtStart.setDate(firstDayOfWeek); 
+        dtStart.setDate(firstDayOfWeek);
         dtStart.setHours(0);
         dtStart.setMinutes(0);
         dtEnd.setHours(23);
@@ -199,6 +206,7 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
         dtStart.setHours(0);
         dtStart.setMinutes(0);
         dtEnd = Common.addDays(dtStart, +6);
+        console.log(dtEnd);
         dtEnd.setHours(23);
         dtEnd.setMinutes(59);
         logger.info('LAST WEEK', dtStart, dtEnd)
@@ -232,6 +240,7 @@ module.exports.getChartDataByRange = async (dtgrp, callback) => {
     const dtStart_ = formatDateDb(dtStart);
     const dtEnd_ = formatDateDb(dtEnd);
     logger.info('dtStart_', dtStart_, 'dtEnd_', dtEnd_ );
+    logger.info('dtStart_', dtStart, 'dtEnd_', dtEnd, dtgrp);
     sqlQuery += ` where TimeStamp >  '${dtStart_}' and TimeStamp < '${dtEnd_}' `;
     sqlQuery += ` order by timestamp;`;
 
@@ -432,7 +441,9 @@ function formatDateDb(dayt){
     var date = '' 
     + dt.getFullYear() + '-'
     + ('0' + (dt.getMonth() + 1)).slice(-2) + '-'
-    + ('0' + dt.getDate()).slice(-2);
+    + ('0' + dt.getDate()).slice(-2) + ' '
+    + ('0' + dt.getHours()).slice(-2) + ':'
+    + ('0' + dt.getMinutes()).slice(-2);
 
     return date ;
 }
