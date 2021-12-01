@@ -1,7 +1,7 @@
-const mysql = require('mysql2');
 const Environment = require('../config/environment');
 const db = require('../database');
 const Common = require('./common');
+
 
 const logger = require('log4js').getLogger('sensor');
 logger.level = 'error'; // Environment.logLevel; // 'debug';
@@ -152,7 +152,7 @@ const chartSetDataEmpty = [
   ]
 
 
-module.exports.getLatestReading = (callback) => {
+module.exports.getLatestReading =  async (callback) => {
     let sqlQuery = `SELECT * from  env_data`;
     sqlQuery += ` order by timestamp desc limit 1;`;
 
@@ -160,7 +160,7 @@ module.exports.getLatestReading = (callback) => {
 
     db.query(sqlQuery, function (err, result, fields) {
         if (err) {
-            logger.error('Error on listAll');
+            logger.error('Error on getLatestReading', err);
             callback(err,null);
         } else {
             logger.info('result here', result);
@@ -168,7 +168,6 @@ module.exports.getLatestReading = (callback) => {
         }
     });
 };
-
 
 module.exports.getChartDataByRange = async (dtgrp, callback) => {
 

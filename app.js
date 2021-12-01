@@ -4,11 +4,13 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql2');
+const mariadb = require('mariadb');
 const compression = require('compression')
 const Environment = require('./config/environment');
 const sensors = require('./routes/sensors');
 
 const dbConfig = Environment.db;
+const dbConfigMaria = Environment.dbMaria;
 
 const log4js = require('log4js');
 log4js.configure({
@@ -29,7 +31,12 @@ const logger = log4js.getLogger(appName);
 // Port Number
 const port = 3001;
 
-const connection = mysql.createConnection(dbConfig);
+// const connection = mysql.createConnection(dbConfig);
+// connection.connect();
+
+// const connection = mariadb.createConnection(dbConfig);
+// const pool = mariadb.createPool(dbConfigMaria);
+// conn = pool.getConnection();
 
 const app = express();
 
@@ -46,10 +53,16 @@ app.use(cors());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log('Connected!');
-});
+// connection.connect((err) => {
+//   if (err) throw err;
+//   console.log('Connected!');
+// });
+
+
+// pool.getConnection((err) => {
+//   if (err) throw err;
+//   console.log('Connected!');
+// });
 
 app.use('/sensors', sensors);
 
