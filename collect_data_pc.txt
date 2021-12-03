@@ -1,0 +1,131 @@
+import serial
+import time
+from time import sleep
+import pandas as pd
+import numpy as np
+import datetime
+import mysql.connector as msql
+from mysql.connector import Error
+
+# Initialize connection with arduino
+ser = serial.Serial('COM5', baudrate=9600, timeout=1)
+time.sleep(1)
+
+# Extract data from Arduino
+def getValues():
+    arduinoData = ser.readline().decode().split('\r\n')  # filter Arduino data
+    return arduinoData[0]  # filter out spaces
+
+
+# Function below is used to connect to MySQl and create a database using python, but it could be easier to create database directly on workbench
+def create_database():
+    try:
+        conn = msql.connect(host='127.0.0.1', user='clarenz', password='MN:$r50a6-p')  # Give username, password
+        if conn.is_connected():
+            cursor = conn.cursor()
+            cursor.execute("CREATE DATABASE garden")
+            print("Database is created")
+    except Error as e:
+        print("Error while connecting to MySQL", e)
+
+
+# Function below is used to connect to MySQL, connect to the database and create the table
+def create_table():
+    try:
+        conn = msql.connect(host='127.0.0.1', database='garden', user='clarenz', password='MN:$r50a6-p')
+        if conn.is_connected():
+            cursor = conn.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            print("You're connected to database: ", record)
+            # Drops existing table in preparation to make a new one
+            cursor.execute('DROP TABLE IF EXISTS env_data;')
+            print('Creating table....')
+            # In the below line please pass the create table statement which you want to create
+            cursor.execute("CREATE TABLE env_data(TimeStamp DATETIME, Nitrogen INT,"
+                           "Phosphorous INT, Potassium INT, Light INT, "
+                           "SoilMoisture INT, Temperature INT, Pressure INT, "
+                           "Altitude INT, Humidity INT, WaterFlow INT)")
+            print("Table is created....")
+    except Error as e:
+        print("Error while connecting to MySQL", e)
+
+
+# Function below is used to insert values into table
+def insert_values():
+    try:
+        conn = msql.connect(host='127.0.0.1', database='garden', user='clarenz', password='MN:$r50a6-p')
+        if conn.is_connected():
+            cursor = conn.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            print("You're connected to database: ", record)
+            counter = 0
+            # With the system running, extract data and insert in the database
+            while 1:
+                if counter <= 9:
+                    # Create array to store data values
+                    numPoints = 10
+                    dataList = np.array([0] * numPoints, dtype=int)
+                    # Place data into dataList array
+                    for j in range(0, numPoints):
+                        data1 = getValues()
+                        dataList[j] = data1
+                        # print('Data List:', dataList[j])
+                    # Assign values in array to variable names
+                    temp = dataList[0]
+                    pressure = dataList[1]
+                    alt = dataList[2]
+                    hum = dataList[3]
+                    soil_moisture = dataList[4]
+                    light = dataList[5]
+                    water_flow = dataList[6]
+                    n = dataList[7]
+                    ph = dataList[8]
+                    k = dataList[9]
+
+                    # Create the time stamp
+                    ct = datetime.datetime.now()
+                    time_stamp = ct.strftime('%Y-%m-%d %H:%M:%S')
+
+                    # Restructure the data into another array with labels
+                    data2 = {'Time Stamp': time_stamp, 'Nitrogen [mg/kg]': n, 'Phosphorous [mg/kg]': ph,
+                             'Potassium [mg/kg]': k, 'Light [lx]': light, 'Soil Moisture': soil_moisture,
+                             'Temperature [F]': temp, 'Pressure [hPa]': pressure, 'Approx. Altitude [m]': alt,
+                             'Humidity [%]': hum, 'Flow Meter [gpm]': water_flow}
+                    # Create a dataframe and turn convert to a csv file
+                    df = pd.DataFrame(data2, index=[0])
+                    df.to_csv('garden_test_data.csv', index=False)
+
+                    # To preview the csv dataframe
+                    #print('\n', df)
+
+                    # Loop through the data frame (csv file) to insert values into database table
+                    for i, row in df.iterrows():
+                        # Use 'name of database'.'name of table'
+                        # Here %s means sql string values (different from python string?)
+                        sql = "INSERT INTO garden.env_data VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                        cursor.execute(sql, tuple(row))
+                        print("Record inserted")
+                        # The connection is not auto committed by default, so we must commit to save our changes
+                        conn.commit()
+
+                    # Execute Query (optional request data results from the database)
+                    sql = "SELECT * FROM garden.env_data"
+                    cursor.execute(sql)
+                    # Fetch all the records
+                    result = cursor.fetchall()
+                    for i in result:
+                        print(i)
+                    counter += 1
+                    time.sleep(30)
+                else:
+                    print("Done")
+                    exit(1)
+    except Error as e:
+        print("Error while connecting to MySQL", e)
+
+
+#create_database()
+#create_table()
+insert_values()
